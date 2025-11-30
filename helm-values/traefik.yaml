@@ -1,0 +1,47 @@
+---
+# --- Deployment Settings ---
+# Configures the deployment type for the Traefik controller.
+deployment:
+  # Sets the deployment kind to DaemonSet to ensure it runs on the node.
+  kind: DaemonSet
+
+# --- Node Scheduling ---
+# Ensures Traefik runs only on nodes designated for ingress (control-plane in Kind).
+nodeSelector:
+  "ingress-ready": "true"
+
+# --- Port Configuration ---
+# Configures the listening ports for the Traefik controller.
+ports:
+  # Configures the HTTP entrypoint.
+  web:
+    # Binds the container port to 80.
+    port: 80
+    # Exposes port 80 directly on the host machine (mapped to 8080 in Kind config).
+    hostPort: 80
+    # Sets the container port name.
+    containerPort: 80
+
+  # Configures the HTTPS entrypoint.
+  websecure:
+    # Binds the container port to 443.
+    port: 443
+    # Exposes port 443 directly on the host machine (mapped to 8443 in Kind config).
+    hostPort: 443
+    # Sets the container port name.
+    containerPort: 443
+
+# --- Service Settings ---
+# Configures the Kubernetes Service for Traefik.
+service:
+  # Disables the LoadBalancer service as host ports are used.
+  enabled: false
+
+# --- Provider Settings ---
+# Configures the Kubernetes provider integration.
+providers:
+  # Configures settings for Kubernetes CRDs (IngressRoute).
+  kubernetesCRD:
+    allowCrossNamespace: true
+  # Enables the standard Kubernetes Ingress provider.
+  kubernetesIngress: {}

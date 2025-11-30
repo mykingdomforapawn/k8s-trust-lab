@@ -1,0 +1,21 @@
+---
+# --- Installation Settings ---
+# Automatically installs the Custom Resource Definitions (CRDs).
+# This creates the 'Certificate', 'Issuer', and 'ClusterIssuer' resources.
+installCRDs: true
+
+# --- Replica Settings ---
+# Sets the replica count to 1 for a lightweight local lab environment.
+replicaCount: 1
+
+# --- Webhook Settings ---
+# Configures the webhook component.
+webhook:
+  # Sets replica count to 1.
+  replicaCount: 1
+
+# --- CA Injector Settings ---
+# Configures the cainjector component.
+cainjector:
+  # Sets replica count to 1.
+  replicaCount: 1

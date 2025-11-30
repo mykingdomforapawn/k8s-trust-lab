@@ -1,0 +1,33 @@
+---
+# Specifies the API version for Ingress resources.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Chart.Name }}
+  annotations:
+    # ---------------------------------------------------------
+    # THE TRIGGER: This tells cert-manager to secure this Ingress.
+    # It references the ClusterIssuer we created earlier.
+    # ---------------------------------------------------------
+    cert-manager.io/cluster-issuer: {{ .Values.ingress.issuer }}
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: {{ .Values.ingress.host }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .Chart.Name }}
+                port:
+                  number: 80
+  # ---------------------------------------------------------
+  # THE REQUEST: This defines what the certificate should cover.
+  # ---------------------------------------------------------
+  tls:
+    - hosts:
+        - {{ .Values.ingress.host }}
+      # cert-manager will store the resulting certificate in this Secret.
+      secretName: {{ .Chart.Name }}-tls

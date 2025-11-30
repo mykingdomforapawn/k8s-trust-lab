@@ -1,0 +1,15 @@
+---
+# Configures the application image.
+image:
+  repository: nginxdemos/hello
+  tag: latest
+  pullPolicy: IfNotPresent
+
+# Configures the Ingress settings.
+ingress:
+  enabled: true
+  # The hostname we will use to access the app.
+  # You will likely need to add this to your /etc/hosts file.
+  host: app.trust-lab.local
+  # The name of the ClusterIssuer we created in the trust-setup chart.
+  issuer: my-cluster-ca

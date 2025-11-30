@@ -1,24 +1,70 @@
 ---
-# Defines the configuration for the local Kind cluster.
-kind: Cluster
-apiVersion: kind.x-k8s.io/v1alpha4
-nodes:
-  # Configures the control plane node.
-  - role: control-plane
-    # Patches the node configuration to support Ingress controllers.
-    kubeadmConfigPatches:
-      - |
-        kind: InitConfiguration
-        nodeRegistration:
-          kubeletExtraArgs:
-            node-labels: "ingress-ready=true"
-    # Maps container ports to the host machine for access.
-    extraPortMappings:
-      # Maps Ingress HTTP traffic to host port 8080.
-      - containerPort: 80
-        hostPort: 8080
-        protocol: TCP
-      # Maps Ingress HTTPS traffic to host port 8443.
-      - containerPort: 443
-        hostPort: 8443
-        protocol: TCP
+# --- Helm Repositories ---
+# Defines the remote chart repositories used by Helmfile.
+repositories:
+  # Repository for the Traefik Ingress controller.
+  - name: traefik
+    url: https://helm.traefik.io/traefik
+  # Repository for Jetstack charts (cert-manager, trust-manager).
+  - name: jetstack
+    url: https://charts.jetstack.io
+
+# --- Helm Releases ---
+# Defines the list of software to deploy into the cluster.
+releases:
+  # --- Release: Traefik (Ingress) ---
+  - name: traefik
+    # Deploys into the 'traefik' namespace.
+    namespace: traefik
+    # Creates the namespace if it does not exist.
+    createNamespace: true
+    # Specifies the chart to use from the 'traefik' repo.
+    chart: traefik/traefik
+    # Pins the chart version for stability.
+    version: 26.1.0
+    # Loads configuration overrides from a local values file.
+    values:
+      - ./helm-values/traefik.yaml
+
+  # --- Release: cert-manager ---
+  # The engine that automates certificate management.
+  - name: cert-manager
+    # Deploys into the 'cert-manager' namespace.
+    namespace: cert-manager
+    createNamespace: true
+    chart: jetstack/cert-manager
+    # Pins the version (v1.14 is very stable).
+    version: v1.14.4
+    values:
+      - ./helm-values/cert-manager.yaml
+
+  # --- Release: Trust Setup ---
+  # Deploys the Root CA and ClusterIssuers.
+  - name: trust-setup
+    # Deploys into the cert-manager namespace so it can access the CA secret.
+    namespace: cert-manager
+    # Points to the local chart path.
+    chart: ./helm-charts/trust-setup
+    # Waits for cert-manager to be ready before creating resources.
+    needs:
+      - cert-manager
+    # Adds a hook to wait for the cert-manager webhook to be ready.
+    hooks:
+      - events: ["presync"]
+        showlogs: true
+        command: "kubectl"
+        args:
+          - "wait"
+          - "--namespace=cert-manager"
+          - "--for=condition=Available"
+          - "deployment/cert-manager-webhook"
+          - "--timeout=60s"
+
+  # --- Release: Secure App ---
+  # Deploys the demo app that requests an HTTPS certificate.
+  - name: secure-app
+    namespace: default
+    chart: ./helm-charts/secure-app
+    # Ensures the PKI infrastructure is ready before deploying the app.
+    needs:
+      - "cert-manager/trust-setup"

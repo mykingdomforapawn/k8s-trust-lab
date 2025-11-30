@@ -1,0 +1,45 @@
+---
+# --- Bootstrap Issuer ---
+# Creates a SelfSigned ClusterIssuer to generate the Root CA certificate.
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: selfsigned-bootstrap-issuer
+spec:
+  selfSigned: {}
+
+---
+# --- Root CA Certificate ---
+# Requests a CA certificate from the bootstrap issuer.
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: my-root-ca
+  # Stores the certificate in the cert-manager namespace for security.
+  namespace: cert-manager
+spec:
+  # Defines the duration of the Root CA (10 years).
+  duration: 87600h
+  # Defines the name of the Kubernetes Secret where the key/cert will be stored.
+  secretName: root-ca-secret
+  # Sets the Common Name (CN) for the Authority.
+  commonName: "Trust Lab Root CA"
+  # Flags this certificate as a Certificate Authority.
+  isCA: true
+  # References the bootstrap issuer created above.
+  issuerRef:
+    name: selfsigned-bootstrap-issuer
+    kind: ClusterIssuer
+    group: cert-manager.io
+
+---
+# --- Main CA Issuer ---
+# Creates the ClusterIssuer that applications will use to request certificates.
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: my-cluster-ca
+spec:
+  ca:
+    # Points to the Secret containing the Root CA keypair generated above.
+    secretName: root-ca-secret

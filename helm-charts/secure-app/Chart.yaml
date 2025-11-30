@@ -1,1 +1,13 @@
-sl
+---
+# Defines the metadata for the Helm chart.
+apiVersion: v2
+# Sets the name of the chart.
+name: secure-app
+# Provides a short description of the chart's purpose.
+description: A demo app to test HTTPS and certificate issuance.
+# Specifies that this is an application chart.
+type: application
+# Sets the version of the chart itself.
+version: 0.1.0
+# Sets the version of the application deployed by this chart.
+appVersion: 1.0.0
