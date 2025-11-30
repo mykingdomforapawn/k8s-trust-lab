@@ -1,0 +1,10 @@
+---
+# Inherits default rules from the standard configuration.
+extends: default
+
+# Overrides specific rules to match project standards.
+rules:
+  # Increases the line length limit to accommodate long URLs or commands.
+  line-length: {max: 120}
+  # Enforces consistent 2-space indentation.
+  indentation: {spaces: 2}

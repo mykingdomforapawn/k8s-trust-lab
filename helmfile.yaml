@@ -1,0 +1,24 @@
+---
+# Defines the configuration for the local Kind cluster.
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+  # Configures the control plane node.
+  - role: control-plane
+    # Patches the node configuration to support Ingress controllers.
+    kubeadmConfigPatches:
+      - |
+        kind: InitConfiguration
+        nodeRegistration:
+          kubeletExtraArgs:
+            node-labels: "ingress-ready=true"
+    # Maps container ports to the host machine for access.
+    extraPortMappings:
+      # Maps Ingress HTTP traffic to host port 8080.
+      - containerPort: 80
+        hostPort: 8080
+        protocol: TCP
+      # Maps Ingress HTTPS traffic to host port 8443.
+      - containerPort: 443
+        hostPort: 8443
+        protocol: TCP

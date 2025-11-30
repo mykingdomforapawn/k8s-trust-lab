@@ -1,0 +1,25 @@
+---
+# Defines the repositories and hooks for pre-commit checks.
+repos:
+  # configures standard file fixers and checks.
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      # Checks YAML files for syntax errors.
+      - id: check-yaml
+        # Excludes Helm templates as they contain Go templating syntax.
+        exclude: ^helm-charts/.*/templates/
+      # Ensures files end with a newline character.
+      - id: end-of-file-fixer
+      # Trims trailing whitespace from lines.
+      - id: trailing-whitespace
+
+  # Configures the YAML linter.
+  - repo: https://github.com/adrienverge/yamllint
+    rev: v1.35.1
+    hooks:
+      # Runs yamllint with specific arguments.
+      - id: yamllint
+        args: ['--config-file', '.yamllint.yaml']
+        # Excludes Helm templates from linting.
+        exclude: ^helm-charts/.*/templates/
